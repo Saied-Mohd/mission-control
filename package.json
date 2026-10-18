@@ -4,11 +4,17 @@
   "private": true,
   "description": "Saied's + Claude's encrypted mission control: boards, agent logs, approvals, vault, brain.",
   "type": "module",
-  "bin": { "mc": "bin/mc.js" },
-  "engines": { "node": ">=20" },
+  "bin": {
+    "mc": "bin/mc.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "serve": "node bin/mc.js serve",
     "test": "node --test test/*.test.mjs",
-    "icons": "node scripts/make-icons.mjs"
+    "icons": "node scripts/make-icons.mjs",
+    "install:desktop": "node scripts/install-desktop.mjs",
+    "uninstall:desktop": "node scripts/install-desktop.mjs --remove"
   }
 }
