@@ -1,0 +1,8 @@
+# The encrypted data lives in its own private repo, cloned here.
+/data/
+node_modules/
+.DS_Store
+*.log
+/_site/
+/deck/
+/data-seed/
