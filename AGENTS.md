@@ -45,7 +45,10 @@ boards, agent logs, handoffs, approvals, secrets and the agent brain. **Use `mc`
 
 - `mc scan` refreshes git health (branch, uncommitted, last commit) for every project. Run it at the start of a long session.
 - `mc radar add YYYY-MM-DD "…" --project p` whenever you learn a date (token expiry, deadline). `mc radar check` pushes what's due.
-- New project? `mc project add "<Name>" --path … --repo … --tagline … --tags …`, then `mc project set <p> routerFile CLAUDE.md`.
+- New project? `mc project add "<Name>" --path … --repo … --tagline … --tags …`, then `mc adopt <slug>`. That adds the Mission Control
+  section to the repo's CLAUDE.md/AGENTS.md and a post-commit hook that logs commits. Extra folders: `mc project set <p> paths a,b`.
+- Global Claude Code hooks (`mc hooks install`) inject the project brief at SessionStart for any session inside a project folder,
+  and log "ended without a handoff" at SessionEnd. Repo-specific agents therefore stay in sync automatically.
 - The deck lives in `deck/index.html`. After changing it, run `mc deck publish` so it shows in the app.
 
 ## Architecture (short)

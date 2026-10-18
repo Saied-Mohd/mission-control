@@ -37,6 +37,8 @@ ${c.bold('Overview & upkeep')}
   mc status | mc inbox [ls|add|done <id> "reply"] | mc radar [ls|add|rm|check]
   mc project ls|add|show|set|link|rm | mc scan (git health) | mc notify "<title>" "<body>"
   mc request ls|status|wait <id> | mc deck publish | mc sync | mc doctor | mc config [key value]
+  mc adopt <project>|--all [--remove]          wire repos: router section + commit logging
+  mc hooks install [--remove]                   Claude Code SessionStart/End hooks (global)
   mc guard install <repo…> | scan <repo>        secret-scanning pre-commit hook
   mc init [--data dir] [--remote url] | mc serve [--port 4317] | mc seed <file.json>
 
@@ -65,9 +67,17 @@ const ROUTES = {
   seed: cmd.seed,
   doctor: cmd.doctor,
   config: cmd.config,
+  adopt: async (a) => (await import('../cli/adopt.js')).adopt(a),
+  hook: async (a) => (await import('../cli/adopt.js')).hook(a),
+  hooks: async (a) => (await import('../cli/adopt.js')).hooksInstall(a),
   guard: async (a) => (await import('../cli/guard.js')).guard(a),
   serve: async (a) => (await import('../cli/server.js')).serve(a),
 };
+
+// Piping into head/grep closes stdout early; that's not an error.
+process.stdout.on('error', (e) => {
+  if (e.code === 'EPIPE') process.exit(0);
+});
 
 const [name, ...argv] = process.argv.slice(2);
 if (!name || name === 'help' || name === '--help' || name === '-h') {

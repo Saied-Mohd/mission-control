@@ -77,7 +77,8 @@ export function emptyProject(slug, fields = {}) {
     health: null,
     createdAt: now(),
     updatedAt: now(),
-    ...fields,
+    ...Object.fromEntries(Object.entries(fields).filter(([, v]) => v !== undefined)),
+    slug,
   };
 }
 

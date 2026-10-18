@@ -62,7 +62,8 @@ test('store conflict detection + model flows', async () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mc-store-'));
   const keys = await C.deriveDataKeys(C.randomBytes(32));
   const store = new Store(new FsAdapter(dir), keys);
-  await M.createProject(store, { name: 'Alpha Beta', tags: ['x'] });
+  await M.createProject(store, { name: 'Alpha Beta', slug: undefined, path: undefined, tags: ['x'] });
+  assert.equal((await M.listProjects(store))[0].slug, 'alpha-beta');
   assert.equal(await M.resolveSlug(store, 'alp'), 'alpha-beta');
   const t = await M.addTask(store, 'alpha-beta', { title: 'Ship it' });
   await M.updateTask(store, 'alpha-beta', t.id.slice(-5), { col: 'done' });

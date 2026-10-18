@@ -263,11 +263,12 @@ export async function project({ pos, flags }) {
       const slug = await slugOf(store, pos[1]);
       const field = pos[2];
       const value = pos.slice(3).join(' ');
-      const allowed = ['name', 'tagline', 'status', 'color', 'path', 'repo', 'notes', 'routerFile', 'tags', 'stack', 'rules'];
+      const allowed = ['name', 'tagline', 'status', 'color', 'path', 'paths', 'repo', 'notes', 'routerFile', 'tags', 'stack', 'rules'];
       if (!allowed.includes(field)) fail(`field must be one of ${allowed.join(', ')}`);
       if (field === 'status' && !M.PROJECT_STATUSES.includes(value)) fail(`status must be one of ${M.PROJECT_STATUSES.join(', ')}`);
       await M.saveProject(store, slug, (p) => {
         if (['tags', 'stack'].includes(field)) p[field] = list(value);
+        else if (field === 'paths') p.paths = list(value).map((x) => path.resolve(x));
         else if (field === 'rules') p.rules = [...(p.rules || []), value];
         else p[field] = value;
       });
