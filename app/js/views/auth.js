@@ -110,6 +110,9 @@ function renderRecovery(root, code, done) {
 export function renderConnect(root, { session, done }) {
   let useRecovery = false;
   const owner = h('input.input', { placeholder: 'your-github-username', autocomplete: 'username', autocapitalize: 'off', spellcheck: 'false' });
+  // On GitHub Pages the owner is in the hostname (<owner>.github.io).
+  const pagesOwner = location.hostname.match(/^([a-z0-9-]+)\.github\.io$/i)?.[1];
+  if (pagesOwner) owner.value = pagesOwner;
   const repo = h('input.input', { value: 'mission-control-data', autocapitalize: 'off', spellcheck: 'false' });
   const pat = passInput({ placeholder: 'github_pat_…', autocomplete: 'off' });
   const pass = passInput({ placeholder: 'Master passphrase', autocomplete: 'current-password' });

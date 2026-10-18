@@ -218,10 +218,24 @@ export class GitHubAdapter {
     if (!res.ok) throw new HttpError(res.status, `GitHub delete ${path}: ${res.status} ${await errorText(res)}`);
   }
 
+  /** GitHub answers 404 for private repos a token can't access. Work out which case it is. */
+  async diagnose404() {
+    const repo = `${this.owner}/${this.repo}`;
+    let login = null;
+    try {
+      const u = await this.req('GET', `${GH}/user`);
+      if (u.ok) login = (await u.json()).login;
+    } catch {}
+    if (login && login.toLowerCase() !== this.owner.toLowerCase()) {
+      return `This token belongs to ${login}, but the repo owner is "${this.owner}". Check the owner field, or create the token under ${this.owner}.`;
+    }
+    return `The token works${login ? ` (signed in as ${login})` : ''} but can't see ${repo}. Edit the token on GitHub → Repository access → "Only select repositories" → add ${this.repo}, and under Repository permissions set Contents to "Read and write". The default "Public repositories" option cannot see private repos.`;
+  }
+
   /** Quick check that the token can see the repo. */
   async checkRepo() {
     const res = await this.req('GET', this.base);
-    if (res.status === 404) throw new HttpError(404, `Repo ${this.owner}/${this.repo} not found, or the token cannot see it.`);
+    if (res.status === 404) throw new HttpError(404, await this.diagnose404());
     if (!res.ok) throw new HttpError(res.status, `GitHub: ${res.status} ${await errorText(res)}`);
     return res.json();
   }
