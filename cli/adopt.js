@@ -106,7 +106,9 @@ function removeCommitHook(repo) {
 
 /** Router files to manage at a root: existing CLAUDE.md / AGENTS.md, else create AGENTS.md + a CLAUDE.md that imports it. */
 function routerTargets(root) {
-  const t = ['CLAUDE.md', 'AGENTS.md'].map((f) => path.join(root, f)).filter((f) => fs.existsSync(f));
+  // a CLAUDE.md that only imports AGENTS.md already gets the section through the import
+  const importOnly = (f) => /^\s*@AGENTS\.md\s*$/.test(fs.readFileSync(f, 'utf8').replace(/<!-- mission-control:begin[\s\S]*?<!-- mission-control:end -->/, ''));
+  const t = ['CLAUDE.md', 'AGENTS.md'].map((f) => path.join(root, f)).filter((f) => fs.existsSync(f) && !importOnly(f));
   return t.length ? t : null;
 }
 
