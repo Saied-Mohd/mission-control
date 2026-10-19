@@ -35,7 +35,7 @@ ${c.bold('Brain')} ${c.dim('(your own memory — keep it sharp)')}
 
 ${c.bold('Overview & upkeep')}
   mc status | mc inbox [ls|add|done <id> "reply"] | mc radar [ls|add|rm|check]
-  mc project ls|add|show|set|link|rm | mc scan (git health) | mc notify "<title>" "<body>"
+  mc project ls|add|show|set|link|rm  (set <p> rules --replace=true "…" starts the rule list over) | mc scan (git health) | mc notify "<title>" "<body>"
   mc request ls|status|wait <id> | mc deck publish | mc sync | mc doctor | mc config [key value]
   mc adopt <project>|--all [--remove]          wire repos: router section + commit logging
   mc hooks install [--remove]                   Claude Code SessionStart/End hooks (global)

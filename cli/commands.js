@@ -269,7 +269,8 @@ export async function project({ pos, flags }) {
       await M.saveProject(store, slug, (p) => {
         if (['tags', 'stack'].includes(field)) p[field] = list(value);
         else if (field === 'paths') p.paths = list(value).map((x) => path.resolve(x));
-        else if (field === 'rules') p.rules = [...(p.rules || []), value];
+        // rules append one at a time; --replace starts the list over
+        else if (field === 'rules') p.rules = flags.replace ? (value ? [value] : []) : [...(p.rules || []), value];
         else p[field] = value;
       });
       out(c.green(`✓ ${slug}.${field} updated`));
