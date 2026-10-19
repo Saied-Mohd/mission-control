@@ -1,6 +1,6 @@
 // Small shared view helpers.
 
-import { h, icon, chip, ago } from '../ui.js';
+import { h, icon, chip, ago, modal, toast, fail } from '../ui.js';
 import * as model from '../model.js';
 
 export const KIND_ICON = {
@@ -131,4 +131,41 @@ export function grantActive(r, at = Date.now()) {
   if (r.type !== 'secret' || r.status !== 'approved') return false;
   const ttl = model.TTL[r.ttl] || model.TTL.once;
   return Date.parse(r.resolvedAt) + ttl.ms > at;
+}
+
+/** Delete a project after the user types its slug. Resolves true if deleted. */
+export async function deleteProjectFlow(store, p) {
+  const input = h('input.input.mono', { placeholder: p.slug, autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false' });
+  const err = h('div.form-error');
+  const ok = await modal('Delete project', h('div',
+    h('p.confirm-msg', `This permanently deletes “${p.name}”, its board and its agent log. Type `, h('code', p.slug), ' to confirm.'),
+    h('p.muted', { style: 'font-size:13px' }, 'Tip: set the status to “archived” instead if you might come back to it. The repo on disk is not touched.'),
+    input, err), [
+    { label: 'Cancel', value: false },
+    { label: 'Delete project', kind: 'danger', onClick: () => {
+      if (input.value.trim() === p.slug) return true;
+      err.textContent = `Type ${p.slug} exactly to confirm.`;
+      return false;
+    } },
+  ]);
+  if (!ok) return false;
+  try {
+    await model.deleteProject(store, p.slug);
+    await model.audit(store, 'saied', 'project.delete', p.slug, p.slug);
+    toast(`Deleted ${p.name}`, { kind: 'ok' });
+    return true;
+  } catch (e) {
+    fail(e);
+    return false;
+  }
+}
+
+/** Archive / unarchive toggle. */
+export async function toggleArchive(store, p) {
+  const status = p.status === 'archived' ? 'active' : 'archived';
+  await model.saveProject(store, p.slug, (x) => {
+    x.status = status;
+  });
+  await model.audit(store, 'saied', 'project.status', status, p.slug);
+  toast(status === 'archived' ? `Archived ${p.name}` : `Restored ${p.name}`, { kind: 'ok' });
 }

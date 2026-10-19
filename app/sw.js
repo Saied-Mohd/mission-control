@@ -4,7 +4,7 @@
 // - NEVER caches /api/ (local server) or api.github.com (it only handles same-origin GETs).
 // - Shows push notifications and routes clicks back into the app.
 
-const VERSION = 'mc-v0.1.1';
+const VERSION = 'mc-v0.1.2';
 
 const SHELL = [
   './',

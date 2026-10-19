@@ -2481,3 +2481,11 @@ details.note-box summary {
     animation-iteration-count: infinite !important;
   }
 }
+
+/* project actions */
+.icon-btn.danger { color: var(--magenta, #ff5ea8); }
+.icon-btn.danger:hover { background: color-mix(in srgb, var(--magenta, #ff5ea8) 16%, transparent); }
+.pcard .chips { align-items: center; }
+.pcard-menu { opacity: .55; margin-left: 2px; }
+.pcard:hover .pcard-menu, .pcard-menu:focus-visible { opacity: 1; }
+@media (hover: none) { .pcard-menu { opacity: .9; } }

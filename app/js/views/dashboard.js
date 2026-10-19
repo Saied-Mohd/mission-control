@@ -1,7 +1,7 @@
 // Dashboard: greeting, stat strip, quick capture, project grid with filters, live activity feed.
 
 import { h, mount, icon, chip, timeEl, excerpt, empty, fail, modal, field } from '../ui.js';
-import { kindBadge, heatChip, statusChip, gitHealth, projectSelect, daysClass, daysText, emptyIndex, poll, pullToRefresh, projectName } from './common.js';
+import { kindBadge, heatChip, statusChip, gitHealth, projectSelect, daysClass, daysText, emptyIndex, poll, pullToRefresh, projectName, deleteProjectFlow, toggleArchive } from './common.js';
 
 const filters = { status: 'live', heat: 'all', q: '' }; // UI-only, kept for the session
 
@@ -106,7 +106,8 @@ export async function render(root, ctx) {
     return h('a.pcard', { href: `#/p/${encodeURIComponent(p.slug)}`, style: { '--c': p.color || 'var(--cyan)' }, dataset: { heat: ht } },
       h('div.top',
         h('div.grow', h('h3', p.name), p.tagline ? h('div.tagline', p.tagline) : null),
-        h('div.chips', statusChip(p.status), heatChip(p))),
+        h('div.chips', statusChip(p.status), heatChip(p),
+          h('button.icon-btn.sm.pcard-menu', { type: 'button', title: 'Project actions', 'aria-label': `Actions for ${p.name}`, onclick: (e) => { e.preventDefault(); e.stopPropagation(); cardMenu(p); } }, icon('more', 16)))),
       h('div.counts',
         h('span', h('b', String(p.open || 0)), 'open'),
         h('span', h('b', String(p.doing || 0)), 'doing'),
@@ -114,6 +115,27 @@ export async function render(root, ctx) {
       p.next ? h('div.next', h('span.label', 'Next'), h('span.ellipsis', p.next)) : null,
       p.handoff ? h('div.handoff', h('span.label', `${p.handoff.agent} · `), excerpt(p.handoff.text, 220)) : p.lastLine ? h('div.handoff', excerpt(p.lastLine, 200)) : null,
       h('div.foot', p.health ? gitHealth(p.health) : null, h('span.spacer'), p.lastActivity ? timeEl(p.lastActivity) : p.updatedAt ? timeEl(p.updatedAt) : null));
+  }
+
+  async function cardMenu(p) {
+    const choice = await modal(p.name, h('p.muted', { style: 'margin:0' }, p.tagline || p.slug), [
+      { label: 'Cancel', value: null, kind: 'ghost' },
+      { label: p.status === 'archived' ? 'Restore' : 'Archive', value: 'archive' },
+      { label: 'Delete…', value: 'delete', kind: 'danger' },
+      { label: 'Open', value: 'open', kind: 'primary' },
+    ]);
+    try {
+      if (choice === 'open') location.hash = `#/p/${encodeURIComponent(p.slug)}`;
+      if (choice === 'archive') await toggleArchive(store, p);
+      if (choice === 'delete' && !(await deleteProjectFlow(store, p))) return;
+      if (choice === 'archive' || choice === 'delete') {
+        ctx.refreshCounts?.();
+        await load();
+        paint();
+      }
+    } catch (e) {
+      fail(e);
+    }
   }
 
   function paintGrid() {

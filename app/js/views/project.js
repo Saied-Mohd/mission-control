@@ -2,7 +2,7 @@
 // Every mutation goes through model.js with actor 'saied'.
 
 import { h, mount, icon, chip, timeEl, md, empty, fail, modal, field, confirm, segmented, extLink, safeUrl, fmtDateTime, fmtDate, excerpt } from '../ui.js';
-import { kindBadge, statusChip, heatChip, gitHealth, prioChip } from './common.js';
+import { kindBadge, statusChip, heatChip, gitHealth, prioChip, deleteProjectFlow } from './common.js';
 
 const PRIO_RANK = { urgent: 0, high: 1, med: 2, low: 3 };
 const COL_COLOR = { backlog: 'var(--dim)', next: 'var(--blue)', doing: 'var(--cyan)', review: 'var(--amber)', done: 'var(--green)' };
@@ -88,7 +88,7 @@ export async function render(root, ctx) {
         h('h1', p.name),
         statusChip(p.status),
         heatChip(ctx.projects().find((x) => x.slug === slug) || p),
-        h('div.actions', statusSel, h('button.btn.btn-sm', { onclick: editHeader }, icon('edit', 14), 'Edit'))),
+        h('div.actions', statusSel, h('button.btn.btn-sm', { onclick: editHeader }, icon('edit', 14), 'Edit'), h('button.icon-btn.sm.danger', { onclick: deleteIt, title: 'Delete project', 'aria-label': 'Delete project' }, icon('trash', 15)))),
       p.tagline ? h('p.tagline', p.tagline) : null,
       h('div.meta',
         (p.tags || []).length ? h('span.item', (p.tags || []).map((t) => chip('#' + t))) : null,
@@ -455,21 +455,9 @@ export async function render(root, ctx) {
   }
 
   async function deleteIt() {
-    const input = h('input.input.mono', { placeholder: slug, autocomplete: 'off' });
-    const ok = await modal('Delete project', h('div', h('p.confirm-msg', `This deletes “${p.name}”, its board and its log. Type the slug to confirm.`), h('div', { style: 'height:10px' }), input), [
-      { label: 'Cancel', value: false },
-      { label: 'Delete', kind: 'danger', onClick: () => (input.value.trim() === slug ? true : false) },
-    ]);
-    if (!ok) return;
-    try {
-      await model.deleteProject(store, slug);
-      await model.audit(store, 'saied', 'project.delete', slug, slug);
-      toast('Project deleted', { kind: 'ok' });
-      ctx.refreshCounts();
-      nav('#/');
-    } catch (e) {
-      fail(e);
-    }
+    if (!(await deleteProjectFlow(store, p))) return;
+    ctx.refreshCounts();
+    nav('#/');
   }
 
   paintHead();
